@@ -11,7 +11,6 @@ const server = http.createServer()
 const paths = routes.map(route => route.path)
 
 server.on('request', (req, res) => {
-
     if(req.method === 'GET' && req.url === '/bundle.js') {
         res.setHeader('Content-Type', 'application/javascript')
         fs.createReadStream('./src/bundle.js').pipe(res)
@@ -28,12 +27,20 @@ server.on('request', (req, res) => {
         )
         
         res.end(wrapContent({content, title}))
+    }else if(req.method === 'POST' && req.url === '/save-history') {
+        let body = ''
+        req.on('data', chunk => {
+            body += chunk.toString()
+        })
+        req.on('end', () => {
+            console.log('Received data:', body)
+            res.end('History saved successfully')
+        })
     }else{
         req.statusCode = 404
         res.setHeader('Content-Type', 'text/plain')
         res.end('invalid method or url')
     }
-
 })
 
 server.on('listening', () => {

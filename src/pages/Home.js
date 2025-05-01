@@ -1,5 +1,6 @@
 import { Edit, PauseIcon, PlayIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { cancelHistory, formatTime, handleVariantClick, saveHistory, toggleTimer } from "../utils/timerUtils"
 
 export const Home = () => {
   const [state, setState] = useState({
@@ -50,68 +51,11 @@ export const Home = () => {
   const stopTimer = () => {
     clearInterval(timerRef.current)
     timerRef.current = null
-    console.log(state.startTime ,state.endTime);
     setState(prev => ({
       ...prev,
       endTime: new Date(),
       showModal: true
     }))
-  }
-
-  const toggleTimer = () => {
-    setState(prev => {
-      if (prev.isTimerRunning) {
-        stopTimer()
-      } else {
-        startTimer()
-      }
-      return { ...prev, isTimerRunning: !prev.isTimerRunning }
-    })
-  }
-
-  const formatTime = () => {
-    const { hours, minutes, seconds, milliseconds } = state.time;
-    const pad = (n) => String(n).padStart(2, "0")
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}:${pad(Math.floor(milliseconds / 10))}`
-  }
-
-  const getDuration = (start, end) => {
-    const diff = end.getTime() - start.getTime()
-    const mins = Math.floor(diff / 60000)
-    const secs = Math.floor((diff % 60000) / 1000)
-    return `${mins}m ${secs}s`
-  }
-
-  const saveHistory = (title) => {    
-    if (!state.startTime || !state.endTime) return
-
-    const newHistory = {
-      title,
-      duration: getDuration(state.startTime, state.endTime),
-      startedAt: state.startTime.toLocaleTimeString(),
-      closedAt: state.endTime.toLocaleTimeString()
-    }
-
-    setState(prev => ({
-      ...prev,
-      histories: [...prev.histories, newHistory],
-      showModal: false,
-      customTitle: "",
-      time: { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
-    }))
-  }
-
-  const cancelHistory = () => {
-    setState(prev => ({
-      ...prev,
-      showModal: false,
-      customTitle: "",
-      time: { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
-    }))
-  }
-
-  const handleVariantClick = (variant) => {
-    saveHistory(variant)
   }
 
   useEffect(() => {
@@ -127,11 +71,11 @@ export const Home = () => {
       <div className="flex py-5 items-center gap-5">
         <div className="flex-1 h-full flex flex-col gap-5">
           <div className="flex justify-between items-center w-full p-4 bg-white rounded-lg">
-            <div className="text-xl font-medium">{formatTime()}</div>
+            <div className="text-xl font-medium">{formatTime(state)}</div>
             <div>
               <button
                 className="bg-green-500/50 w-12 h-12 rounded-full flex items-center justify-center"
-                onClick={toggleTimer}
+                onClick={() => toggleTimer(setState, startTimer, stopTimer)}
               >
                 {state.isTimerRunning ? (
                   <PauseIcon className="fill-green-700 text-green-700" />
@@ -181,7 +125,7 @@ export const Home = () => {
                 <button
                   key={v}
                   className="bg-gray-200 px-3 py-1 rounded"
-                  onClick={() => handleVariantClick(v)} // Handle variant click
+                  onClick={() => handleVariantClick(v, state, setState)}
                 >
                   {v}
                 </button>
@@ -189,13 +133,13 @@ export const Home = () => {
             </div>
             <button
               className="bg-green-500 text-white w-full py-2 rounded"
-              onClick={() => saveHistory(state.customTitle || "Untitled")}
+              onClick={() => saveHistory(state.customTitle || "Untitled", state, setState)}
             >
               Save
             </button>
             <button
               className="bg-red-500 text-white w-full py-2 rounded mt-2"
-              onClick={cancelHistory} // Handle cancel
+              onClick={() => cancelHistory(setState)}
             >
               Cancel
             </button>
