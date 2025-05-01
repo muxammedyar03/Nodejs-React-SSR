@@ -6,6 +6,19 @@ export const wrapContent = ({content, title}) => `
             <link rel="icon" href="data:image/x-icon;base64,AA" />
             <script async defer src="./bundle.js"></script>
             <title>${title}</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+
+            <script>
+                tailwind.config = {
+                    theme: {
+                    extend: {
+                        colors: {
+                        primary: '#1e40af',
+                        }
+                    }
+                    }
+                }
+            </script>
         </head>
         <body>
             <div id="root">
